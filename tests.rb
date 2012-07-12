@@ -28,7 +28,10 @@ class Cache
   end
 
   def put(key, value)
-    unless get(key)
+    if get(key)
+      entry = find_entry(key)
+      entry.value = value
+    else
       @cache.unshift(Entry.new(key, value))
       if @population == @size
         @cache.pop
@@ -39,8 +42,14 @@ class Cache
   end
 
   def get(key)
-    entry = @cache.find { |entry| entry.key == key }
+    entry = find_entry(key)
     entry.value if entry
+  end
+
+  protected
+
+  def find_entry(key)
+    @cache.find { |entry| entry.key == key }
   end
 end
 
@@ -56,7 +65,9 @@ class Cache
   end
 
   def put(key, value)
-    unless get(key)
+    if get(key)
+      get_entry(key).value = value
+    else
       @sequence += 1
       pos = @sequence % @size
       doomed_entry = @cache[pos]
@@ -67,7 +78,14 @@ class Cache
   end
 
   def get(key)
+    entry = get_entry(key)
+    entry.value if entry
+  end
+
+  protected
+
+  def get_entry(key)
     pos = @keys[key]
-    pos ? @cache[pos].value : nil
+    pos ? @cache[pos] : nil
   end
 end
